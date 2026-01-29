@@ -121,4 +121,11 @@ def generate_launch_description():
                 {'namespace': namespace}],
             arguments=['-i', usb_port],
             output='screen'),
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([
+                os.path.join(get_package_share_directory('turtlebot3_utils'), 'launch'),
+                '/oled_display.launch.py'
+            ])
+        ),
     ])
