@@ -1,7 +1,7 @@
 # TurtleBot3
-<img src="media/20251201_141944.jpg" width="650">
+<img src="media/20260206_132256.jpg" width="650">
 
-This is my Turtlebot, using a Raspberry Pi 5 and with an added camera.
+This is my Turtlebot, using a Raspberry Pi 5 and with an added camera, also equipped with an OLED display that shows on boot.
 
 - Active Branches: humble, jazzy, main(rolling)
 - Legacy Branches: *-devel, noetic
