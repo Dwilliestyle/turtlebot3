@@ -28,6 +28,7 @@ class OLEDDisplayNode(Node):
         
         # Data storage
         self.battery_voltage = 0.0
+        self.battery_percentage = 0.0
         self.linear_vel = 0.0
         self.angular_vel = 0.0
         self.cmd_linear = 0.0
@@ -45,6 +46,7 @@ class OLEDDisplayNode(Node):
     
     def battery_callback(self, msg):
         self.battery_voltage = msg.voltage
+        self.battery_percentage = msg.percentage
     
     def odom_callback(self, msg):
         self.linear_vel = msg.twist.twist.linear.x
@@ -59,8 +61,8 @@ class OLEDDisplayNode(Node):
         self.draw.rectangle((0, 0, 128, 64), outline=0, fill=0)
         
         # Draw text
-        self.draw.text((0, 0), "Dons TurtleBot3", fill=255)
-        self.draw.text((0, 12), f"Batt: {self.battery_voltage:.2f}V", fill=255)
+        self.draw.text((0, 0), "Don's TurtleBot3", fill=255)
+        self.draw.text((0, 12), f"Batt: {self.battery_voltage:.2f}V ({self.battery_percentage:.0f}%)", fill=255)
         self.draw.text((0, 24), f"Vel: {self.linear_vel:.2f} m/s", fill=255)
         self.draw.text((0, 36), f"Ang: {self.angular_vel:.2f} r/s", fill=255)
         self.draw.text((0, 48), f"Cmd: {self.cmd_linear:.2f} m/s", fill=255)
