@@ -107,7 +107,7 @@ class Turtlebot3PatrolServer(Node):
                 )
             )
 
-            if yaw_diff < 0.01:
+            if yaw_diff < 0.05:
                 break
 
             self.twist.twist.linear.x = 0.0
@@ -152,7 +152,7 @@ class Turtlebot3PatrolServer(Node):
 
     def square(self, feedback_msg, goal_handle, length):
         self.linear_x = 0.2
-        self.angular_z = 13 * (90.0 / 180.0) * math.pi / 100.0
+        self.angular_z = 1.5
 
         for i in range(4):
             self.position.x = 0.0
