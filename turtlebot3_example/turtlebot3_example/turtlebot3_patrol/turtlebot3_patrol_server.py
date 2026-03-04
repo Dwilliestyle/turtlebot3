@@ -97,7 +97,7 @@ class Turtlebot3PatrolServer(Node):
         target_yaw = initial_yaw + (target_angle * math.pi / 180.0)
 
         while True:
-            rclpy.spin_once(self, timeout_sec=0.1)
+            time.sleep(0.1)
 
             current_yaw = self.get_yaw()
             yaw_diff = abs(
