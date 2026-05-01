@@ -199,7 +199,9 @@ def main(args=None):
 
     turtlebot3_patrol_server = Turtlebot3PatrolServer()
 
-    rclpy.spin(turtlebot3_patrol_server)
+    executor = rclpy.executors.MultiThreadedExecutor()
+    executor.add_node(turtlebot3_patrol_server)
+    executor.spin()
 
 
 if __name__ == '__main__':
