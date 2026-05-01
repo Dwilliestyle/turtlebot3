@@ -103,6 +103,9 @@ class Turtlebot3PatrolServer(Node):
         initial_yaw = self.get_yaw()
         target_yaw = initial_yaw + (target_angle * math.pi / 180.0)
 
+        # Normalize target_yaw to [-pi, pi]
+        target_yaw = math.atan2(math.sin(target_yaw), math.cos(target_yaw))
+
         self.get_logger().info(
             f'Turn start — initial_yaw: {math.degrees(initial_yaw):.1f}°  '
             f'target_yaw: {math.degrees(target_yaw):.1f}°'
@@ -114,19 +117,19 @@ class Turtlebot3PatrolServer(Node):
             loop_count += 1
 
             current_yaw = self.get_yaw()
-            yaw_diff = abs(
-                math.atan2(
-                    math.sin(target_yaw - current_yaw),
-                    math.cos(target_yaw - current_yaw)
-                )
+
+            # Signed error — tells us direction AND magnitude
+            error = math.atan2(
+                math.sin(target_yaw - current_yaw),
+                math.cos(target_yaw - current_yaw)
             )
 
             self.get_logger().info(
                 f'  loop {loop_count}: current_yaw={math.degrees(current_yaw):.1f}°  '
-                f'yaw_diff={math.degrees(yaw_diff):.1f}°'
+                f'error={math.degrees(error):.1f}°'
             )
 
-            if yaw_diff < 0.05:
+            if abs(error) < 0.05:
                 self.get_logger().info(f'  Turn complete after {loop_count} loops')
                 break
 
@@ -134,16 +137,15 @@ class Turtlebot3PatrolServer(Node):
                 self.get_logger().warn('Turn timeout — forcing exit')
                 break
 
-            # Slow down proportionally as we approach the target
-            speed = max(0.6, min(1.0, yaw_diff * 1.2))
-
+            # Proportional speed, direction controlled by sign of error
+            speed = max(0.5, min(1.0, abs(error) * 1.2))
             self.twist.twist.linear.x = 0.0
-            self.twist.twist.angular.z = speed
+            self.twist.twist.angular.z = math.copysign(speed, error)
             self.cmd_vel_pub.publish(self.twist)
 
         self.init_twist()
         time.sleep(0.3)
-
+        
     def goal_callback(self, goal_request):
         self.goal_msg = goal_request
         return GoalResponse.ACCEPT
