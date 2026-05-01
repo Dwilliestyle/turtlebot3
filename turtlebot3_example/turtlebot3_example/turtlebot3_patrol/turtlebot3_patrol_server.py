@@ -135,7 +135,7 @@ class Turtlebot3PatrolServer(Node):
                 break
 
             # Slow down proportionally as we approach the target
-            speed = max(0.3, min(1.0, yaw_diff * 1.2))
+            speed = max(0.6, min(1.0, yaw_diff * 1.2))
 
             self.twist.twist.linear.x = 0.0
             self.twist.twist.angular.z = speed
