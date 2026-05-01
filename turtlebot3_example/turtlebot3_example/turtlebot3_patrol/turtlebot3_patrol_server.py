@@ -20,7 +20,6 @@ import math
 import threading
 import time
 
-from geometry_msgs.msg import Point
 from geometry_msgs.msg import Twist, TwistStamped
 from nav_msgs.msg import Odometry
 import rclpy
@@ -52,19 +51,16 @@ class Turtlebot3PatrolServer(Node):
         self.goal_msg = Patrol.Goal()
         self.twist = TwistStamped()
         self.odom = Odometry()
-        self.position = Point()
-        self.rotation = 0.0
 
-        self.linear_x = 1.0
-        self.angular_z = 4.0
+        self.linear_x = 0.2
+        self.angular_z = 1.5
 
         qos = QoSProfile(depth=10)
 
         self.cmd_vel_pub = self.create_publisher(TwistStamped, 'cmd_vel', qos)
 
         self.odom_sub = self.create_subscription(
-            Odometry, 'odom', self.odom_callback, qos
-        )
+            Odometry, 'odom', self.odom_callback, qos)
 
     def init_twist(self):
         self.twist.twist.linear.x = 0.0
@@ -80,17 +76,28 @@ class Turtlebot3PatrolServer(Node):
         cosy = 1.0 - 2.0 * (q.y * q.y + q.z * q.z)
         return math.atan2(siny, cosy)
 
-    def go_front(self, position, length):
+    def go_front(self, length):
+        start_x = self.odom.pose.pose.position.x
+        start_y = self.odom.pose.pose.position.y
+
         while True:
-            position += self.twist.twist.linear.x
-            if position >= length:
+            current_x = self.odom.pose.pose.position.x
+            current_y = self.odom.pose.pose.position.y
+            dist = math.sqrt(
+                (current_x - start_x) ** 2 +
+                (current_y - start_y) ** 2
+            )
+
+            if dist >= length:
                 break
+
             self.twist.twist.linear.x = self.linear_x
             self.twist.twist.angular.z = 0.0
             self.cmd_vel_pub.publish(self.twist)
+            time.sleep(0.05)
 
-            time.sleep(1)
         self.init_twist()
+        time.sleep(0.3)  # brief pause before turning
 
     def turn(self, target_angle):
         initial_yaw = self.get_yaw()
@@ -115,10 +122,10 @@ class Turtlebot3PatrolServer(Node):
             self.cmd_vel_pub.publish(self.twist)
 
         self.init_twist()
+        time.sleep(0.3)  # brief pause before next move
 
     def goal_callback(self, goal_request):
         self.goal_msg = goal_request
-
         return GoalResponse.ACCEPT
 
     def execute_callback(self, goal_handle):
@@ -128,17 +135,14 @@ class Turtlebot3PatrolServer(Node):
         length = self.goal_msg.goal.y
         iteration = int(self.goal_msg.goal.z)
 
-        while True:
-            if self.goal_msg.goal.x == 1:
-                for count in range(iteration):
-                    self.square(feedback_msg, goal_handle, length)
-                feedback_msg.state = 'square patrol complete!!'
-                break
-            elif self.goal_msg.goal.x == 2:
-                for count in range(iteration):
-                    self.triangle(feedback_msg, goal_handle, length)
-                feedback_msg.state = 'triangle patrol complete!!'
-                break
+        if self.goal_msg.goal.x == 1:
+            for count in range(iteration):
+                self.square(feedback_msg, goal_handle, length)
+            feedback_msg.state = 'square patrol complete!!'
+        elif self.goal_msg.goal.x == 2:
+            for count in range(iteration):
+                self.triangle(feedback_msg, goal_handle, length)
+            feedback_msg.state = 'triangle patrol complete!!'
 
         goal_handle.succeed()
         result = Patrol.Result()
@@ -155,34 +159,22 @@ class Turtlebot3PatrolServer(Node):
         self.angular_z = 1.5
 
         for i in range(4):
-            self.position.x = 0.0
-            self.angle = 0.0
-
-            self.go_front(self.position.x, length)
+            self.go_front(length)
             self.turn(90.0)
 
             feedback_msg.state = 'line ' + str(i + 1)
             goal_handle.publish_feedback(feedback_msg)
-            time.sleep(0.1)
-
-        self.init_twist()
 
     def triangle(self, feedback_msg, goal_handle, length):
         self.linear_x = 0.2
-        self.angular_z = 8 * (120.0 / 180.0) * math.pi / 100.0
+        self.angular_z = 1.5
 
         for i in range(3):
-            self.position.x = 0.0
-            self.angle = 0.0
-
-            self.go_front(self.position.x, length)
+            self.go_front(length)
             self.turn(120.0)
 
             feedback_msg.state = 'line ' + str(i + 1)
             goal_handle.publish_feedback(feedback_msg)
-            time.sleep(1)
-
-        self.init_twist()
 
 
 def main(args=None):
