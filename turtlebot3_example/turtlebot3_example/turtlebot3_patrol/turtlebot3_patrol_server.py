@@ -134,8 +134,11 @@ class Turtlebot3PatrolServer(Node):
                 self.get_logger().warn('Turn timeout — forcing exit')
                 break
 
+            # Slow down proportionally as we approach the target
+            speed = max(0.3, min(1.0, yaw_diff * 1.2))
+
             self.twist.twist.linear.x = 0.0
-            self.twist.twist.angular.z = self.angular_z
+            self.twist.twist.angular.z = speed
             self.cmd_vel_pub.publish(self.twist)
 
         self.init_twist()
@@ -173,7 +176,6 @@ class Turtlebot3PatrolServer(Node):
 
     def square(self, feedback_msg, goal_handle, length):
         self.linear_x = 0.2
-        self.angular_z = 1.5
 
         for i in range(4):
             self.go_front(length)
