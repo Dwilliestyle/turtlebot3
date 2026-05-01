@@ -103,8 +103,15 @@ class Turtlebot3PatrolServer(Node):
         initial_yaw = self.get_yaw()
         target_yaw = initial_yaw + (target_angle * math.pi / 180.0)
 
+        self.get_logger().info(
+            f'Turn start — initial_yaw: {math.degrees(initial_yaw):.1f}°  '
+            f'target_yaw: {math.degrees(target_yaw):.1f}°'
+        )
+
+        loop_count = 0
         while True:
             time.sleep(0.1)
+            loop_count += 1
 
             current_yaw = self.get_yaw()
             yaw_diff = abs(
@@ -114,7 +121,17 @@ class Turtlebot3PatrolServer(Node):
                 )
             )
 
+            self.get_logger().info(
+                f'  loop {loop_count}: current_yaw={math.degrees(current_yaw):.1f}°  '
+                f'yaw_diff={math.degrees(yaw_diff):.1f}°'
+            )
+
             if yaw_diff < 0.05:
+                self.get_logger().info(f'  Turn complete after {loop_count} loops')
+                break
+
+            if loop_count > 200:
+                self.get_logger().warn('Turn timeout — forcing exit')
                 break
 
             self.twist.twist.linear.x = 0.0
@@ -122,7 +139,7 @@ class Turtlebot3PatrolServer(Node):
             self.cmd_vel_pub.publish(self.twist)
 
         self.init_twist()
-        time.sleep(0.3)  # brief pause before next move
+        time.sleep(0.3)
 
     def goal_callback(self, goal_request):
         self.goal_msg = goal_request
