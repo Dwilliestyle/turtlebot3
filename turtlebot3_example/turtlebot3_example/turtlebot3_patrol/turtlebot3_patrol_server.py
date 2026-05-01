@@ -79,6 +79,7 @@ class Turtlebot3PatrolServer(Node):
     def go_front(self, length):
         start_x = self.odom.pose.pose.position.x
         start_y = self.odom.pose.pose.position.y
+        target_heading = self.get_yaw()  # hold this heading
 
         while True:
             current_x = self.odom.pose.pose.position.x
@@ -91,13 +92,19 @@ class Turtlebot3PatrolServer(Node):
             if dist >= length:
                 break
 
+            # Small correction to hold heading
+            heading_error = math.atan2(
+                math.sin(target_heading - self.get_yaw()),
+                math.cos(target_heading - self.get_yaw())
+            )
+
             self.twist.twist.linear.x = self.linear_x
-            self.twist.twist.angular.z = 0.0
+            self.twist.twist.angular.z = heading_error * 0.5  # proportional correction
             self.cmd_vel_pub.publish(self.twist)
             time.sleep(0.05)
 
         self.init_twist()
-        time.sleep(0.3)  # brief pause before turning
+        time.sleep(0.3)
 
     def turn(self, target_angle):
         initial_yaw = self.get_yaw()
@@ -145,7 +152,7 @@ class Turtlebot3PatrolServer(Node):
 
         self.init_twist()
         time.sleep(0.3)
-        
+
     def goal_callback(self, goal_request):
         self.goal_msg = goal_request
         return GoalResponse.ACCEPT
