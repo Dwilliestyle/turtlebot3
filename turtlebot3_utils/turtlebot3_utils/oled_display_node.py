@@ -10,6 +10,8 @@ from PIL import Image, ImageDraw, ImageFont
 import adafruit_ssd1306
 import math
 
+from rclpy.executors import ExternalShutdownException
+
 class OLEDDisplayNode(Node):
     def __init__(self):
         super().__init__('oled_display_node')
@@ -73,10 +75,14 @@ class OLEDDisplayNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = OLEDDisplayNode()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+    node = OledDisplayNode()   # keep whatever your class is called
+    try:
+        rclpy.spin(node)
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.try_shutdown()
 
 if __name__ == '__main__':
     main()
