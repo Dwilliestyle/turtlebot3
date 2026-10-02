@@ -33,14 +33,16 @@ def generate_launch_description():
     state_publisher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
             bringup_dir, 'launch', 'turtlebot3_state_publisher.launch.py')),
-        launch_arguments={'use_sim_time': 'false'}.items(),
+        launch_arguments={'use_sim_time': 'false',
+                         'namespace': ''}.items(),
     )
 
     lidar = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
             get_package_share_directory(LIDAR_PKG), 'launch', LIDAR_LAUNCH)),
         launch_arguments={'port': LIDAR_PORT,
-                          'frame_id': 'base_scan'}.items(),
+                          'frame_id': 'base_scan',
+                          'namespace': ''}.items(),
     )
 
     turtlebot3_node = Node(
