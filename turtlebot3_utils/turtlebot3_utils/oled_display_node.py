@@ -80,6 +80,10 @@ def main(args=None):
         rclpy.spin(node)
     except (KeyboardInterrupt, ExternalShutdownException):
         pass
+
+    node.oled.fill(0)
+    node.oled.show()
+    
     finally:
         node.destroy_node()
         rclpy.try_shutdown()
