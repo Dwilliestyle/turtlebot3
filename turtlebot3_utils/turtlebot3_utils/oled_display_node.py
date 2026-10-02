@@ -75,16 +75,14 @@ class OLEDDisplayNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = OledDisplayNode()   # keep whatever your class is called
+    node = OLEDDisplayNode()
     try:
         rclpy.spin(node)
     except (KeyboardInterrupt, ExternalShutdownException):
         pass
-
-    node.oled.fill(0)
-    node.oled.show()
-    
     finally:
+        node.oled.fill(0)
+        node.oled.show()
         node.destroy_node()
         rclpy.try_shutdown()
 
