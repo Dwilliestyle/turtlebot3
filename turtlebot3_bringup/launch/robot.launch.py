@@ -48,7 +48,7 @@ def generate_launch_description():
     turtlebot3_node = Node(
         package='turtlebot3_node',
         executable='turtlebot3_ros',
-        parameters=[param_file],
+        parameters=[param_file, {'namespace': ''}],
         arguments=['-i', OPENCR_PORT],
         output='screen',
     )
